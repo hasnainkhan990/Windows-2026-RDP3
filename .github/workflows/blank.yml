@@ -1,0 +1,17 @@
+name: Windows-RDP-6-Hours
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Setup RDP and Password
+        run: |
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          net user Administrator Pass@123 /add
+          net user Administrator Pass@123
+          net localgroup administrators Administrator /add
+      - name: Start Tunnel and Keep Alive
+        run: |
+          Invoke-WebRequest https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile cf.exe
+          ./cf.exe tunnel --url rdp://localhost:3389
